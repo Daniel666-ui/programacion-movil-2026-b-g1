@@ -22,6 +22,16 @@ export const colors = {
   redSoft: '#2D1517',
 } as const;
 
+// Roles de color. `subtle` queda solo para bordes y adornos: como texto no alcanza 4.5:1.
+export const semanticos = {
+  primario: colors.teal,
+  secundario: colors.blue,
+  exito: colors.green,
+  error: colors.red,
+  fondo: colors.bg,
+  textoSecundario: colors.muted,
+} as const;
+
 export const spacing = {
   xs: 4,
   sm: 8,

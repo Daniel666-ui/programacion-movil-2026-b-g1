@@ -8,7 +8,7 @@ import Card from '../components/Card';
 import ChipSelector from '../components/ChipSelector';
 import EmptyState from '../components/EmptyState';
 import ScreenHeader from '../components/ScreenHeader';
-import { colors, fontSize, radius, spacing } from '../constants/theme';
+import { colors, fontSize, radius, semanticos, spacing } from '../constants/theme';
 import { useApp } from '../context/AppContext';
 import type { RootStackParamList } from '../types';
 import { fechaCorta } from '../utils/date';
@@ -152,7 +152,7 @@ const styles = StyleSheet.create({
   estadoIcono: { fontSize: 18 },
   nombre: { color: colors.text, fontSize: fontSize.sm + 1, fontWeight: '600' },
   fecha: { color: colors.muted, fontSize: fontSize.xs + 1, marginTop: 2 },
-  notas: { color: colors.subtle, fontSize: fontSize.xs, marginTop: 3, fontStyle: 'italic' },
+  notas: { color: semanticos.textoSecundario, fontSize: fontSize.xs, marginTop: 3, fontStyle: 'italic' },
   derecha: { alignItems: 'flex-end' },
   valor: { fontSize: fontSize.lg, fontWeight: '800' },
   unidad: { color: colors.muted, fontSize: fontSize.xs - 1 },
