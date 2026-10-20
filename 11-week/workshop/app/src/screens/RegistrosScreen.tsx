@@ -7,9 +7,11 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import Card from '../components/Card';
 import ChipSelector from '../components/ChipSelector';
 import EmptyState from '../components/EmptyState';
+import RegistrosCargando from '../components/RegistrosCargando';
 import ScreenHeader from '../components/ScreenHeader';
 import { colors, fontSize, radius, semanticos, spacing } from '../constants/theme';
 import { useApp } from '../context/AppContext';
+import { useCargaRegistros } from '../hooks/useCargaRegistros';
 import type { RootStackParamList } from '../types';
 import { fechaCorta } from '../utils/date';
 
@@ -21,6 +23,7 @@ export default function RegistrosScreen() {
   const navigation = useNavigation<Navegacion>();
   const { registros, habitos, habitoPorId, eliminarRegistro } = useApp();
   const [filtro, setFiltro] = useState<number>(TODOS);
+  const { estado, cargar } = useCargaRegistros();
 
   const visibles = useMemo(() => {
     const lista = filtro === TODOS ? registros : registros.filter((r) => r.habitoId === filtro);
@@ -62,20 +65,31 @@ export default function RegistrosScreen() {
         />
 
         <FlatList
-          data={visibles}
+          data={estado === 'listo' ? visibles : []}
           keyExtractor={(item) => String(item.id)}
           contentContainerStyle={styles.lista}
           showsVerticalScrollIndicator={false}
           ListEmptyComponent={
-            <EmptyState
-              icono="📋"
-              titulo="Sin registros"
-              mensaje="Registra el avance de tus habitos para ver tu progreso aqui."
-              accion={{
-                titulo: '+ Nuevo registro',
-                onPress: () => navigation.navigate('NuevoRegistro'),
-              }}
-            />
+            estado === 'cargando' ? (
+              <RegistrosCargando />
+            ) : estado === 'error' ? (
+              <EmptyState
+                icono="⚠️"
+                titulo="No pudimos cargar tus registros"
+                mensaje="Revisa tu conexion y vuelve a intentarlo."
+                accion={{ titulo: 'Reintentar', onPress: cargar }}
+              />
+            ) : (
+              <EmptyState
+                icono="📋"
+                titulo="Sin registros"
+                mensaje="Registra el avance de tus habitos para ver tu progreso aqui."
+                accion={{
+                  titulo: '+ Nuevo registro',
+                  onPress: () => navigation.navigate('NuevoRegistro'),
+                }}
+              />
+            )
           }
           renderItem={({ item }) => {
             const habito = habitoPorId(item.habitoId);
