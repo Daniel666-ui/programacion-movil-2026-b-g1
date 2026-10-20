@@ -123,7 +123,7 @@ export default function HistorialScreen() {
                     <View style={styles.encabezadoHabito}>
                       <Text style={styles.nombreHabito}>{habito?.nombre ?? 'Habito'}</Text>
                       <Text style={[styles.porcentaje, { color: colorSegun(porcentaje) }]}>
-                        {porcentaje}%
+                        {porcentaje}% · {nivelSegun(porcentaje)}
                       </Text>
                     </View>
 
@@ -161,7 +161,7 @@ export default function HistorialScreen() {
                     <View style={styles.encabezadoHabito}>
                       <Text style={styles.nombreHabito}>Semana del {lunes}</Text>
                       <Text style={[styles.porcentaje, { color: colorSegun(porcentaje) }]}>
-                        {porcentaje}%
+                        {porcentaje}% · {nivelSegun(porcentaje)}
                       </Text>
                     </View>
                     <View style={styles.barraFondo}>
@@ -201,6 +201,13 @@ function Metrica({
       <Text style={styles.metricaEtiqueta}>{etiqueta}</Text>
     </View>
   );
+}
+
+/** El nivel en palabras acompana al color para que no sea la unica senal. */
+function nivelSegun(porcentaje: number): string {
+  if (porcentaje >= 80) return 'alto';
+  if (porcentaje >= 50) return 'medio';
+  return 'bajo';
 }
 
 function colorSegun(porcentaje: number): string {

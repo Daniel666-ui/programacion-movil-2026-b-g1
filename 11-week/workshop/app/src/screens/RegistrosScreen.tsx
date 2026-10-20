@@ -48,6 +48,8 @@ export default function RegistrosScreen() {
             <Pressable
               style={styles.botonAgregar}
               onPress={() => navigation.navigate('NuevoRegistro')}
+              accessibilityRole="button"
+              accessibilityLabel="Nuevo registro"
             >
               <Text style={styles.botonAgregarTexto}>+</Text>
             </Pressable>
@@ -105,6 +107,8 @@ export default function RegistrosScreen() {
               <Card style={styles.tarjeta}>
                 <View style={styles.fila}>
                   <View
+                    accessible
+                    accessibilityLabel={item.metaCumplida ? 'Meta cumplida' : 'Meta sin cumplir'}
                     style={[
                       styles.estado,
                       { backgroundColor: item.metaCumplida ? colors.greenSoft : colors.surface2 },
@@ -133,7 +137,8 @@ export default function RegistrosScreen() {
 
                   <Pressable
                     onPress={() => confirmarEliminar(item.id)}
-                    hitSlop={8}
+                    style={styles.botonEliminar}
+                    accessibilityRole="button"
                     accessibilityLabel="Eliminar registro"
                   >
                     <Text style={styles.eliminar}>✕</Text>
@@ -155,8 +160,8 @@ const styles = StyleSheet.create({
   lista: { gap: spacing.sm + 2, paddingBottom: spacing.xxl },
   tarjeta: { padding: spacing.md },
   botonAgregar: {
-    width: 40,
-    height: 40,
+    width: 48,
+    height: 48,
     borderRadius: radius.pill,
     backgroundColor: colors.teal,
     alignItems: 'center',
@@ -177,6 +182,7 @@ const styles = StyleSheet.create({
   notas: { color: semanticos.textoSecundario, fontSize: fontSize.xs, marginTop: 3, fontStyle: 'italic' },
   derecha: { alignItems: 'flex-end' },
   valor: { fontSize: fontSize.lg, fontWeight: '800' },
-  unidad: { color: colors.muted, fontSize: fontSize.xs - 1 },
-  eliminar: { color: colors.red, fontSize: fontSize.lg, paddingHorizontal: spacing.xs },
+  unidad: { color: colors.muted, fontSize: fontSize.xs },
+  botonEliminar: { minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' },
+  eliminar: { color: colors.red, fontSize: fontSize.lg },
 });

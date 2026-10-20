@@ -40,7 +40,7 @@ export default function ChipSelector({
               key={opcion.id}
               onPress={() => onSeleccionar(opcion.id)}
               accessibilityRole="radio"
-              accessibilityState={{ selected: activa }}
+              aria-checked={activa}
               style={[styles.chip, activa ? styles.chipActivo : null]}
             >
               <Text style={[styles.texto, activa ? styles.textoActivo : null]}>

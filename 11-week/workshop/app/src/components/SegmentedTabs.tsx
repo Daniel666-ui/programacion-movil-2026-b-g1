@@ -16,7 +16,7 @@ export default function SegmentedTabs<T extends string>({
   onSeleccionar,
 }: Props<T>) {
   return (
-    <View style={styles.contenedor}>
+    <View style={styles.contenedor} accessibilityRole="tablist">
       {opciones.map((opcion) => {
         const activa = opcion.valor === seleccion;
         return (
