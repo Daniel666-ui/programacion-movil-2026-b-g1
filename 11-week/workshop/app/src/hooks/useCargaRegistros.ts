@@ -22,6 +22,7 @@ export function pedirRegistros(): Promise<void> {
 
 export function useCargaRegistros(pedir: () => Promise<void> = pedirRegistros) {
   const [estado, setEstado] = useState<EstadoRegistros>('cargando');
+  const [recargando, setRecargando] = useState(false);
 
   const cargar = useCallback(() => {
     setEstado('cargando');
@@ -34,5 +35,12 @@ export function useCargaRegistros(pedir: () => Promise<void> = pedirRegistros) {
     cargar();
   }, [cargar]);
 
-  return { estado, cargar };
+  const recargar = useCallback(() => {
+    setRecargando(true);
+    pedir()
+      .catch(() => setEstado('error'))
+      .finally(() => setRecargando(false));
+  }, [pedir]);
+
+  return { estado, cargar, recargando, recargar };
 }

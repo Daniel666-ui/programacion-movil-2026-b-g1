@@ -1,7 +1,7 @@
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import React, { useMemo, useState } from 'react';
-import { Alert, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Alert, FlatList, Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import Card from '../components/Card';
@@ -23,7 +23,7 @@ export default function RegistrosScreen() {
   const navigation = useNavigation<Navegacion>();
   const { registros, habitos, habitoPorId, eliminarRegistro } = useApp();
   const [filtro, setFiltro] = useState<number>(TODOS);
-  const { estado, cargar } = useCargaRegistros();
+  const { estado, cargar, recargando, recargar } = useCargaRegistros();
 
   const visibles = useMemo(() => {
     const lista = filtro === TODOS ? registros : registros.filter((r) => r.habitoId === filtro);
@@ -69,6 +69,14 @@ export default function RegistrosScreen() {
           keyExtractor={(item) => String(item.id)}
           contentContainerStyle={styles.lista}
           showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl
+              refreshing={recargando}
+              onRefresh={recargar}
+              tintColor={semanticos.primario}
+              colors={[semanticos.primario]}
+            />
+          }
           ListEmptyComponent={
             estado === 'cargando' ? (
               <RegistrosCargando />
