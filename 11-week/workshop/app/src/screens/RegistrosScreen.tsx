@@ -117,11 +117,16 @@ export default function RegistrosScreen() {
                     <Text style={styles.estadoIcono}>{item.metaCumplida ? '✅' : '⭕'}</Text>
                   </View>
 
-                  <View style={styles.flex}>
+                  <Pressable
+                    style={styles.flex}
+                    onPress={() => navigation.navigate('RegistroDetalle', { id: item.id })}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Ver registro de ${habito?.nombre ?? 'habito eliminado'} del ${fechaCorta(item.fecha)}`}
+                  >
                     <Text style={styles.nombre}>{habito?.nombre ?? 'Habito eliminado'}</Text>
                     <Text style={styles.fecha}>{fechaCorta(item.fecha)}</Text>
                     {item.notas ? <Text style={styles.notas}>“{item.notas}”</Text> : null}
-                  </View>
+                  </Pressable>
 
                   <View style={styles.derecha}>
                     <Text
