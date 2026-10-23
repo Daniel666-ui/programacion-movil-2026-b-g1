@@ -5,8 +5,10 @@ import React from 'react';
 import { colors } from '../constants/theme';
 import LoginScreen from '../screens/LoginScreen';
 import NuevoRegistroScreen from '../screens/NuevoRegistroScreen';
+import RegistroDetalleScreen from '../screens/RegistroDetalleScreen';
 import RegisterScreen from '../screens/RegisterScreen';
 import type { RootStackParamList } from '../types';
+import { enlaces } from './enlaces';
 import TabNavigator from './TabNavigator';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -26,15 +28,16 @@ const temaOscuro: Theme = {
 
 /**
  * Stack raiz:
- *   Login / Registro  →  Tabs  →  NuevoRegistro (modal)
+ *   Login / Registro  →  Tabs  →  RegistroDetalle / NuevoRegistro (modal)
  */
 export default function AppNavigator() {
   return (
-    <NavigationContainer theme={temaOscuro}>
+    <NavigationContainer theme={temaOscuro} linking={enlaces}>
       <Stack.Navigator initialRouteName="Login" screenOptions={{ headerShown: false }}>
         <Stack.Screen name="Login" component={LoginScreen} />
         <Stack.Screen name="Registro" component={RegisterScreen} />
         <Stack.Screen name="Tabs" component={TabNavigator} />
+        <Stack.Screen name="RegistroDetalle" component={RegistroDetalleScreen} />
         <Stack.Screen
           name="NuevoRegistro"
           component={NuevoRegistroScreen}

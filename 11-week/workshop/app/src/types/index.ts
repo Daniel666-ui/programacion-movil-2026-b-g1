@@ -60,6 +60,7 @@ export type RootStackParamList = {
   Registro: undefined;
   Tabs: undefined;
   NuevoRegistro: { habitoId?: number } | undefined;
+  RegistroDetalle: { id: number };
 };
 
 /** Pestañas inferiores */
