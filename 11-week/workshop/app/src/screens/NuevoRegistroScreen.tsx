@@ -1,6 +1,7 @@
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import React, { useState } from 'react';
 import {
+  ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -11,58 +12,38 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import AppButton from '../components/AppButton';
+import AvisoFlotante from '../components/AvisoFlotante';
 import Card from '../components/Card';
 import ChipSelector from '../components/ChipSelector';
 import Input from '../components/Input';
 import ScreenHeader from '../components/ScreenHeader';
 import { colors, fontSize, radius, spacing } from '../constants/theme';
 import { useApp } from '../context/AppContext';
+import { useFormularioRegistro } from '../hooks/useFormularioRegistro';
 import type { RootStackParamList } from '../types';
 import { fechaLarga, hoyISO, sumarDias } from '../utils/date';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'NuevoRegistro'>;
 
 export default function NuevoRegistroScreen({ navigation, route }: Props) {
-  const { habitos, metaActivaDe, habitoPorId, crearRegistro } = useApp();
-
-  const [habitoId, setHabitoId] = useState<number | null>(route.params?.habitoId ?? null);
-  const [fecha, setFecha] = useState(hoyISO());
-  const [valor, setValor] = useState('');
-  const [notas, setNotas] = useState('');
-  const [error, setError] = useState('');
+  const { habitos, metaActivaDe, habitoPorId } = useApp();
+  const { campos, cambiar, errores, enviando, errorServidor, guardar, guardado, tieneCambios } =
+    useFormularioRegistro(route.params?.habitoId ?? null);
+  const { habitoId, fecha, valor, notas } = campos;
   const [exito, setExito] = useState('');
+  const [preguntarSalida, setPreguntarSalida] = useState(false);
 
   const habito = habitoId !== null ? habitoPorId(habitoId) : undefined;
   const meta = habitoId !== null ? metaActivaDe(habitoId) : undefined;
+  const valorTocado = valor !== '';
 
-  const guardar = () => {
-    setError('');
-    setExito('');
+  const salir = () => (tieneCambios ? setPreguntarSalida(true) : navigation.goBack());
 
-    const numero = Number(valor);
-    if (habitoId === null || !valor.trim()) {
-      setError('Selecciona un habito e ingresa el valor registrado');
-      return;
-    }
-    if (Number.isNaN(numero) || numero < 0) {
-      setError('El valor debe ser un numero mayor o igual a cero');
-      return;
-    }
-
-    const resultado = crearRegistro({
-      habitoId,
-      fecha,
-      valorRegistrado: numero,
-      notas,
-    });
-
-    if (!resultado.ok) {
-      setError(resultado.mensaje ?? 'No se pudo guardar el registro');
-      return;
-    }
-
+  const enviar = async () => {
+    const resultado = await guardar();
+    if (!resultado?.ok) return;
     setExito(resultado.mensaje ?? 'Registro guardado');
-    setTimeout(() => navigation.goBack(), 900);
+    setTimeout(() => navigation.goBack(), 1500);
   };
 
   return (
@@ -79,21 +60,25 @@ export default function NuevoRegistroScreen({ navigation, route }: Props) {
             titulo="📝 Nuevo registro"
             subtitulo="Anota tu avance del dia"
             derecha={
-              <Text style={styles.cerrar} onPress={() => navigation.goBack()}>
+              <Text style={styles.cerrar} onPress={salir} accessibilityRole="button">
                 Cerrar
               </Text>
             }
           />
 
           <Card>
-            {error ? (
-              <View style={[styles.mensaje, styles.mensajeError]}>
-                <Text style={styles.textoError}>⚠️ {error}</Text>
+            {preguntarSalida ? (
+              <View style={[styles.mensaje, styles.mensajeError]} accessibilityRole="alert">
+                <Text style={styles.textoError}>¿Salir sin guardar? Se perderan el valor y las notas.</Text>
+                <View style={styles.accionesSalida}>
+                  <AppButton titulo="Seguir editando" variante="secundario" onPress={() => setPreguntarSalida(false)} style={styles.flex} />
+                  <AppButton titulo="Salir" variante="peligro" onPress={() => navigation.goBack()} style={styles.flex} />
+                </View>
               </View>
             ) : null}
-            {exito ? (
-              <View style={[styles.mensaje, styles.mensajeExito]}>
-                <Text style={styles.textoExito}>✅ {exito}</Text>
+            {errorServidor ? (
+              <View style={[styles.mensaje, styles.mensajeError]} accessibilityRole="alert">
+                <Text style={styles.textoError}>⚠️ {errorServidor}</Text>
               </View>
             ) : null}
 
@@ -102,15 +87,16 @@ export default function NuevoRegistroScreen({ navigation, route }: Props) {
                 etiqueta="Habito *"
                 opciones={habitos.map((h) => ({ id: h.id, etiqueta: h.nombre }))}
                 seleccion={habitoId}
-                onSeleccionar={setHabitoId}
+                onSeleccionar={(id) => cambiar('habitoId', id)}
               />
+              <MensajeCampo texto={valorTocado ? errores.habitoId : undefined} />
 
               <View>
                 <Text style={styles.etiqueta}>FECHA *</Text>
                 <View style={styles.selectorFecha}>
                   <Text
                     style={styles.flecha}
-                    onPress={() => setFecha(sumarDias(fecha, -1))}
+                    onPress={() => cambiar('fecha', sumarDias(fecha, -1))}
                     accessibilityLabel="Dia anterior"
                   >
                     ‹
@@ -119,22 +105,24 @@ export default function NuevoRegistroScreen({ navigation, route }: Props) {
                   <Text
                     style={[styles.flecha, fecha >= hoyISO() ? styles.flechaInactiva : null]}
                     onPress={() => {
-                      if (fecha < hoyISO()) setFecha(sumarDias(fecha, 1));
+                      if (fecha < hoyISO()) cambiar('fecha', sumarDias(fecha, 1));
                     }}
                     accessibilityLabel="Dia siguiente"
                   >
                     ›
                   </Text>
                 </View>
+                <MensajeCampo texto={errores.fecha} />
               </View>
 
               <Input
                 etiqueta={`Valor registrado * ${habito ? `(${habito.unidadMedida})` : ''}`}
                 valor={valor}
-                onChange={setValor}
+                onChange={(texto) => cambiar('valor', texto)}
                 placeholder="8"
                 tipoTeclado="numeric"
               />
+              <MensajeCampo texto={valorTocado ? errores.valor : undefined} />
 
               {meta ? (
                 <View style={styles.pistaMeta}>
@@ -153,18 +141,34 @@ export default function NuevoRegistroScreen({ navigation, route }: Props) {
               <Input
                 etiqueta="Notas"
                 valor={notas}
-                onChange={setNotas}
+                onChange={(texto) => cambiar('notas', texto)}
                 placeholder="¿Como te fue hoy? (opcional)"
                 multilinea
               />
 
-              <AppButton titulo="Guardar registro" onPress={guardar} />
+              {enviando ? (
+                <View style={styles.guardando} accessibilityLiveRegion="polite">
+                  <ActivityIndicator color={colors.teal} />
+                  <Text style={styles.pistaTexto}>Guardando registro…</Text>
+                </View>
+              ) : (
+                <AppButton
+                  titulo="Guardar registro"
+                  onPress={enviar}
+                  deshabilitado={Object.keys(errores).length > 0 || guardado}
+                />
+              )}
             </View>
           </Card>
         </ScrollView>
       </KeyboardAvoidingView>
+      <AvisoFlotante texto={exito} />
     </SafeAreaView>
   );
+}
+
+function MensajeCampo({ texto }: { texto?: string }) {
+  return texto ? <Text style={styles.errorCampo}>{texto}</Text> : null;
 }
 
 const styles = StyleSheet.create({
@@ -213,7 +217,8 @@ const styles = StyleSheet.create({
     marginBottom: spacing.lg,
   },
   mensajeError: { backgroundColor: colors.redSoft, borderColor: colors.red },
-  mensajeExito: { backgroundColor: colors.greenSoft, borderColor: colors.green },
   textoError: { color: colors.red, fontSize: fontSize.sm },
-  textoExito: { color: colors.green, fontSize: fontSize.sm },
+  errorCampo: { color: colors.red, fontSize: fontSize.sm, marginTop: spacing.xs },
+  accionesSalida: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.md },
+  guardando: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: spacing.sm, padding: spacing.md },
 });
